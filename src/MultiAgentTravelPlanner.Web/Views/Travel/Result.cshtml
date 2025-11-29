@@ -1,0 +1,104 @@
+@model MultiAgentTravelPlanner.Web.Models.TravelItinerary
+
+@{
+    ViewData["Title"] = "Your Travel Itinerary";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Same Sidebar as Index -->
+        <div class="col-md-3 bg-light p-4">
+            <h4>🤖 Multi-Agent System</h4>
+            <hr>
+            
+            <h5>How It Works</h5>
+            <p>This travel planner uses a <strong>multi-agent architecture</strong> to create comprehensive itineraries:</p>
+            
+            <h6>🎯 Supervisor Agent</h6>
+            <ul class="small">
+                <li>Coordinates all other agents</li>
+                <li>Receives your travel request</li>
+                <li>Delegates tasks to specialized agents</li>
+                <li>Assembles the final itinerary</li>
+            </ul>
+            
+            <h6>✈️ Flight Agent</h6>
+            <ul class="small">
+                <li>Provides flight options</li>
+            </ul>
+            
+            <h6>🏨 Hotel Agent</h6>
+            <ul class="small">
+                <li>Finds accommodation options</li>
+            </ul>
+            
+            <h6>🏛️ Attractions Agent</h6>
+            <ul class="small">
+                <li>Discovers local attractions</li>
+            </ul>
+            
+            <h6>🍽️ Food Agent</h6>
+            <ul class="small">
+                <li>Recommends restaurants</li>
+            </ul>
+            
+            <hr>
+            
+            <a href="@Url.Action("Index")" class="btn btn-outline-primary w-100">
+                ← Plan Another Trip
+            </a>
+        </div>
+        
+        <!-- Results Content -->
+        <div class="col-md-9 p-4">
+            <div class="alert alert-success" role="alert">
+                <h4 class="alert-heading">✅ Your Multi-Agent Generated Itinerary:</h4>
+                <p class="mb-0">
+                    <strong>Trip:</strong> @Model.Request.Origin → @Model.Request.Destination<br>
+                    <strong>Dates:</strong> @Model.Request.StartDate.ToString("MMMM dd, yyyy") - @Model.Request.EndDate.ToString("MMMM dd, yyyy")<br>
+                    <small class="text-muted">Generated at: @Model.GeneratedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</small>
+                </p>
+            </div>
+            
+            <!-- Itinerary Content -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="itinerary-content">
+                        @Html.Raw(System.Net.WebUtility.HtmlEncode(Model.ItineraryContent ?? "").Replace("\n", "<br>"))
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4">
+                <a href="@Url.Action("Index")" class="btn btn-primary">Plan Another Trip</a>
+                <button onclick="window.print()" class="btn btn-outline-secondary">Print Itinerary</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .itinerary-content {
+        line-height: 1.8;
+        font-size: 1.1em;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+    
+    .itinerary-content h1, .itinerary-content h2, .itinerary-content h3 {
+        color: #2c3e50;
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+    }
+    
+    .itinerary-content strong {
+        color: #2980b9;
+    }
+    
+    @@media print {
+        .col-md-3 { display: none; }
+        .col-md-9 { width: 100%; }
+        .btn { display: none; }
+    }
+}
+</style>
