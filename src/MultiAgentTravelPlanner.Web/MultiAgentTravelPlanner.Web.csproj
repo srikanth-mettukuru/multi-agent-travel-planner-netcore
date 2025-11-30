@@ -4,12 +4,12 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0-beta.1" />
-    <PackageReference Include="Azure.AI.projects" Version="1.1.0" />
-    <PackageReference Include="Azure.Identity" Version="1.16.0" />
+    <PackageReference Include="OpenAI" Version="2.0" />
+    <PackageReference Include="System.Text.Json" Version="9.0.0" />
   </ItemGroup>
 
 </Project>

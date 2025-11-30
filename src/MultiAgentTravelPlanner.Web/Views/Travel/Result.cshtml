@@ -1,104 +1,195 @@
 @model MultiAgentTravelPlanner.Web.Models.TravelItinerary
 
 @{
-    ViewData["Title"] = "Your Travel Itinerary";
+    ViewData["Title"] = "Travel Itinerary";
+    var nights = (Model.Request.EndDate - Model.Request.StartDate).Days;
 }
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Same Sidebar as Index -->
-        <div class="col-md-3 bg-light p-4">
-            <h4>🤖 Multi-Agent System</h4>
-            <hr>
-            
-            <h5>How It Works</h5>
-            <p>This travel planner uses a <strong>multi-agent architecture</strong> to create comprehensive itineraries:</p>
-            
-            <h6>🎯 Supervisor Agent</h6>
-            <ul class="small">
-                <li>Coordinates all other agents</li>
-                <li>Receives your travel request</li>
-                <li>Delegates tasks to specialized agents</li>
-                <li>Assembles the final itinerary</li>
-            </ul>
-            
-            <h6>✈️ Flight Agent</h6>
-            <ul class="small">
-                <li>Provides flight options</li>
-            </ul>
-            
-            <h6>🏨 Hotel Agent</h6>
-            <ul class="small">
-                <li>Finds accommodation options</li>
-            </ul>
-            
-            <h6>🏛️ Attractions Agent</h6>
-            <ul class="small">
-                <li>Discovers local attractions</li>
-            </ul>
-            
-            <h6>🍽️ Food Agent</h6>
-            <ul class="small">
-                <li>Recommends restaurants</li>
-            </ul>
-            
-            <hr>
-            
-            <a href="@Url.Action("Index")" class="btn btn-outline-primary w-100">
-                ← Plan Another Trip
-            </a>
-        </div>
-        
-        <!-- Results Content -->
-        <div class="col-md-9 p-4">
-            <div class="alert alert-success" role="alert">
-                <h4 class="alert-heading">✅ Your Multi-Agent Generated Itinerary:</h4>
-                <p class="mb-0">
-                    <strong>Trip:</strong> @Model.Request.Origin → @Model.Request.Destination<br>
-                    <strong>Dates:</strong> @Model.Request.StartDate.ToString("MMMM dd, yyyy") - @Model.Request.EndDate.ToString("MMMM dd, yyyy")<br>
-                    <small class="text-muted">Generated at: @Model.GeneratedAt.ToString("MMMM dd, yyyy 'at' h:mm tt")</small>
-                </p>
-            </div>
-            
-            <!-- Itinerary Content -->
-            <div class="card">
-                <div class="card-body">
-                    <div class="itinerary-content">
-                        @Html.Raw(System.Net.WebUtility.HtmlEncode(Model.ItineraryContent ?? "").Replace("\n", "<br>"))
-                    </div>
-                </div>
-            </div>
-            
-            <div class="mt-4">
-                <a href="@Url.Action("Index")" class="btn btn-primary">Plan Another Trip</a>
-                <button onclick="window.print()" class="btn btn-outline-secondary">Print Itinerary</button>
-            </div>
-        </div>
-    </div>
+<div class="container mt-4">
+    <h2>Your Travel Itinerary</h2>
+    <p>
+        <strong>@Model.Request.Origin</strong> → <strong>@Model.Request.Destination</strong><br>
+        @Model.Request.StartDate.ToString("MMM dd, yyyy") - @Model.Request.EndDate.ToString("MMM dd, yyyy") (@nights nights)
+    </p>
+    <hr>
+
+    <!-- Flights -->
+    <h3>✈️ Flights</h3>
+    @if (Model.Flights?.IsSuccessful == true)
+    {
+        <h5>Outbound</h5>
+        @if (Model.Flights.OutboundFlights.Any())
+        {
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Class</th>
+                        <th>Stops</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var flight in Model.Flights.OutboundFlights)
+                    {
+                        <tr>
+                            <td>@flight.Airline @flight.FlightNumber</td>
+                            <td>@flight.DepartureAirport → @flight.ArrivalAirport</td>
+                            <td>@flight.DepartureTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.ArrivalTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.Class</td>
+                            <td>@flight.Stops</td>
+                            <td>$@flight.Price.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.Flights.ReturnFlights.Any())
+        {
+            <h5>Return</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Class</th>
+                        <th>Stops</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var flight in Model.Flights.ReturnFlights)
+                    {
+                        <tr>
+                            <td>@flight.Airline @flight.FlightNumber</td>
+                            <td>@flight.DepartureAirport → @flight.ArrivalAirport</td>
+                            <td>@flight.DepartureTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.ArrivalTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.Class</td>
+                            <td>@flight.Stops</td>
+                            <td>$@flight.Price.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+    else
+    {
+        <p class="text-muted">@Model.Flights?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Hotels -->
+    <h3>🏨 Hotels</h3>
+    @if (Model.Hotels?.IsSuccessful == true && Model.Hotels.Hotels.Any())
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Hotel Name</th>
+                    <th>Stars</th>
+                    <th>Address</th>
+                    <th>Price/Night</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hotel in Model.Hotels.Hotels)
+                {
+                    <tr>
+                        <td>@hotel.HotelName</td>
+                        <td>@hotel.StarRating ⭐</td>
+                        <td>@hotel.Address</td>
+                        <td>$@hotel.PricePerNight.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Hotels?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Attractions -->
+    <h3>🏛️ Attractions</h3>
+    @if (Model.Attractions?.IsSuccessful == true && Model.Attractions.Attractions.Any())
+    {
+        <ul>
+            @foreach (var attraction in Model.Attractions.Attractions)
+            {
+                <li>
+                    <strong>@attraction.Name</strong>
+                    @if (!string.IsNullOrEmpty(attraction.Location))
+                    {
+                        <span> - @attraction.Location</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Attractions?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Restaurants -->
+    <h3>🍽️ Restaurants</h3>
+    @if (Model.Restaurants?.IsSuccessful == true && Model.Restaurants.Restaurants.Any())
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Restaurant</th>
+                    <th>Cuisine</th>
+                    <th>Price Level</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var restaurant in Model.Restaurants.Restaurants)
+                {
+                    <tr>
+                        <td>@restaurant.RestaurantName</td>
+                        <td>@restaurant.CuisineType</td>
+                        <td>@restaurant.PriceLevel</td>
+                        <td>@restaurant.Address</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Restaurants?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Itinerary Summary -->
+    <h3>📅 Day-by-Day Itinerary</h3>
+    @if (!string.IsNullOrWhiteSpace(Model.Summary))
+    {
+        <div style="white-space: pre-wrap;">@Model.Summary</div>
+    }
+    else
+    {
+        <p class="text-muted">No summary available.</p>
+    }
+
+    <hr>
+
+    <a href="@Url.Action("Index")" class="btn btn-primary">Plan Another Trip</a>
 </div>
-
-<style>
-    .itinerary-content {
-        line-height: 1.8;
-        font-size: 1.1em;
-        white-space: pre-wrap;
-        word-wrap: break-word;
-    }
-    
-    .itinerary-content h1, .itinerary-content h2, .itinerary-content h3 {
-        color: #2c3e50;
-        margin-top: 1.5em;
-        margin-bottom: 0.5em;
-    }
-    
-    .itinerary-content strong {
-        color: #2980b9;
-    }
-    
-    @@media print {
-        .col-md-3 { display: none; }
-        .col-md-9 { width: 100%; }
-        .btn { display: none; }
-    }
-}
-</style>

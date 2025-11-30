@@ -7,12 +7,12 @@ namespace MultiAgentTravelPlanner.Web.Controllers;
 
 public class TravelController : Controller
 {
-    private readonly IAzureAITravelService _azureAITravelService;
+    private readonly ITravelAgent _travelAgent;
     private readonly ILogger<TravelController> _logger;
 
-    public TravelController(IAzureAITravelService azureAITravelService, ILogger<TravelController> logger)
+    public TravelController(ITravelAgent travelAgent, ILogger<TravelController> logger)
     {
-        _azureAITravelService = azureAITravelService;
+        _travelAgent = travelAgent;
         _logger = logger;
     }
 
@@ -21,18 +21,20 @@ public class TravelController : Controller
     /// </summary>
     public IActionResult Index()
     {
-        // Initialize with default values (like your Python placeholders)
+        // Initialize with default values
         var model = new TravelRequest
         {
-            StartDate = DateTime.Today,
-            EndDate = DateTime.Today.AddDays(1)
+            Origin = "Seattle",
+            Destination = "Tokyo",
+            StartDate = DateTime.Today.AddDays(30),
+            EndDate = DateTime.Today.AddDays(37)
         };
 
         return View(model);
     }
 
     /// <summary>
-    /// Handles travel itinerary generation   
+    /// Handles travel itinerary generation using the TravelAgent supervisor
     /// </summary>
     [HttpPost]
     public async Task<IActionResult> GenerateItinerary(TravelRequest request)
@@ -60,28 +62,39 @@ public class TravelController : Controller
             return View("Index", request);
         }
 
+        if (request.StartDate < DateTime.Today)
+        {
+            ModelState.AddModelError("StartDate", "Start date cannot be in the past.");
+            return View("Index", request);
+        }
+
         _logger.LogInformation("Processing travel request from {Origin} to {Destination} " +
                              "between {StartDate} and {EndDate}",
             request.Origin, request.Destination, request.StartDate, request.EndDate);
 
         try
         {
-            // Call the Azure AI service (equivalent to your Python: with st.spinner(...))
-            var itinerary = await _azureAITravelService.GenerateItineraryAsync(request);
+            // Call the TravelAgent supervisor to orchestrate all agents
+            var itinerary = await _travelAgent.PlanTripAsync(request);
 
             if (itinerary.IsSuccessful)
             {
-                _logger.LogInformation("Successfully generated itinerary for {Origin} to {Destination}",
-                    request.Origin, request.Destination);
+                _logger.LogInformation("Successfully generated itinerary for {Origin} to {Destination}. " +
+                    "Flights: {FlightCount}, Hotels: {HotelCount}, Attractions: {AttractionCount}, Restaurants: {RestaurantCount}",
+                    request.Origin, request.Destination,
+                    itinerary.Flights?.OutboundFlights.Count ?? 0,
+                    itinerary.Hotels?.Hotels.Count ?? 0,
+                    itinerary.Attractions?.Attractions.Count ?? 0,
+                    itinerary.Restaurants?.Restaurants.Count ?? 0);
                 
-                // Show results page (equivalent to your Python: st.success and st.markdown)
+                // Show results page with complete itinerary
                 return View("Result", itinerary);
             }
             else
             {
                 _logger.LogWarning("Failed to generate itinerary: {ErrorMessage}", itinerary.ErrorMessage);
                 
-                // Add error to model and return to form (equivalent to your Python: st.error)
+                // Add error to model and return to form
                 ModelState.AddModelError("", itinerary.ErrorMessage ?? "Unable to generate itinerary. Please try again.");
                 return View("Index", request);
             }
@@ -91,8 +104,8 @@ public class TravelController : Controller
             _logger.LogError(ex, "Unexpected error generating itinerary for {Origin} to {Destination}",
                 request.Origin, request.Destination);
             
-            // Handle errors (equivalent to your Python: except Exception as e: st.error)
-            ModelState.AddModelError("", "An unexpected error occurred. Please try again or check your connection.");
+            // Handle errors gracefully
+            ModelState.AddModelError("", "An unexpected error occurred while planning your trip. Please try again.");
             return View("Index", request);
         }
     }
