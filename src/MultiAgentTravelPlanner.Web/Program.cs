@@ -5,9 +5,6 @@ using MultiAgentTravelPlanner.Web.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Register configuration settings
-builder.Services.Configure<AzureAISettings>(
-    builder.Configuration.GetSection(AzureAISettings.SectionName));
-
 builder.Services.Configure<OpenAISettings>(
     builder.Configuration.GetSection(OpenAISettings.SectionName));
 
