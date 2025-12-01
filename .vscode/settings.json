@@ -1,0 +1,4 @@
+{
+    "appService.defaultWebAppToDeploy": "/subscriptions/2f751d28-5777-44f4-b32f-0dd1580ed7d9/resourceGroups/travel-planner-rg/providers/Microsoft.Web/sites/multi-agent-travel-planner",
+    "appService.deploySubpath": "src\\MultiAgentTravelPlanner.Web"
+}
