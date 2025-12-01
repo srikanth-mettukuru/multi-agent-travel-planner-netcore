@@ -1,0 +1,195 @@
+@model MultiAgentTravelPlanner.Web.Models.TravelItinerary
+
+@{
+    ViewData["Title"] = "Travel Itinerary";
+    var nights = (Model.Request.EndDate - Model.Request.StartDate).Days;
+}
+
+<div class="container mt-4">
+    <h2>Your Travel Itinerary</h2>
+    <p>
+        <strong>@Model.Request.Origin</strong> → <strong>@Model.Request.Destination</strong><br>
+        @Model.Request.StartDate.ToString("MMM dd, yyyy") - @Model.Request.EndDate.ToString("MMM dd, yyyy") (@nights nights)
+    </p>
+    <hr>
+
+    <!-- Flights -->
+    <h3>✈️ Flights</h3>
+    @if (Model.Flights?.IsSuccessful == true)
+    {
+        <h5>Outbound</h5>
+        @if (Model.Flights.OutboundFlights.Any())
+        {
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Class</th>
+                        <th>Stops</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var flight in Model.Flights.OutboundFlights)
+                    {
+                        <tr>
+                            <td>@flight.Airline @flight.FlightNumber</td>
+                            <td>@flight.DepartureAirport → @flight.ArrivalAirport</td>
+                            <td>@flight.DepartureTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.ArrivalTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.Class</td>
+                            <td>@flight.Stops</td>
+                            <td>$@flight.Price.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        @if (Model.Flights.ReturnFlights.Any())
+        {
+            <h5>Return</h5>
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Flight</th>
+                        <th>Route</th>
+                        <th>Departure</th>
+                        <th>Arrival</th>
+                        <th>Class</th>
+                        <th>Stops</th>
+                        <th>Price</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var flight in Model.Flights.ReturnFlights)
+                    {
+                        <tr>
+                            <td>@flight.Airline @flight.FlightNumber</td>
+                            <td>@flight.DepartureAirport → @flight.ArrivalAirport</td>
+                            <td>@flight.DepartureTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.ArrivalTime.ToString("MMM dd, h:mm tt")</td>
+                            <td>@flight.Class</td>
+                            <td>@flight.Stops</td>
+                            <td>$@flight.Price.ToString("N2")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    }
+    else
+    {
+        <p class="text-muted">@Model.Flights?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Hotels -->
+    <h3>🏨 Hotels</h3>
+    @if (Model.Hotels?.IsSuccessful == true && Model.Hotels.Hotels.Any())
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Hotel Name</th>
+                    <th>Stars</th>
+                    <th>Address</th>
+                    <th>Price/Night</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var hotel in Model.Hotels.Hotels)
+                {
+                    <tr>
+                        <td>@hotel.HotelName</td>
+                        <td>@hotel.StarRating ⭐</td>
+                        <td>@hotel.Address</td>
+                        <td>$@hotel.PricePerNight.ToString("N2")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Hotels?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Attractions -->
+    <h3>🏛️ Attractions</h3>
+    @if (Model.Attractions?.IsSuccessful == true && Model.Attractions.Attractions.Any())
+    {
+        <ul>
+            @foreach (var attraction in Model.Attractions.Attractions)
+            {
+                <li>
+                    <strong>@attraction.Name</strong>
+                    @if (!string.IsNullOrEmpty(attraction.Location))
+                    {
+                        <span> - @attraction.Location</span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Attractions?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Restaurants -->
+    <h3>🍽️ Restaurants</h3>
+    @if (Model.Restaurants?.IsSuccessful == true && Model.Restaurants.Restaurants.Any())
+    {
+        <table class="table table-sm">
+            <thead>
+                <tr>
+                    <th>Restaurant</th>
+                    <th>Cuisine</th>
+                    <th>Price Level</th>
+                    <th>Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var restaurant in Model.Restaurants.Restaurants)
+                {
+                    <tr>
+                        <td>@restaurant.RestaurantName</td>
+                        <td>@restaurant.CuisineType</td>
+                        <td>@restaurant.PriceLevel</td>
+                        <td>@restaurant.Address</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <p class="text-muted">@Model.Restaurants?.ErrorMessage</p>
+    }
+
+    <hr>
+
+    <!-- Itinerary Summary -->
+    <h3>📅 Day-by-Day Itinerary</h3>
+    @if (!string.IsNullOrWhiteSpace(Model.Summary))
+    {
+        <div style="white-space: pre-wrap;">@Model.Summary</div>
+    }
+    else
+    {
+        <p class="text-muted">No summary available.</p>
+    }
+
+    <hr>
+
+    <a href="@Url.Action("Index")" class="btn btn-primary">Plan Another Trip</a>
+</div>

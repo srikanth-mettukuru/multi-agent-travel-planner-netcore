@@ -1,0 +1,161 @@
+@model MultiAgentTravelPlanner.Web.Models.TravelRequest
+
+@{
+    ViewData["Title"] = "AI Travel Planner";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar - replicates your Python st.sidebar -->
+        <div class="col-md-3 bg-light p-4">
+            <h4>🤖 Multi-Agent System</h4>
+            <hr>
+            
+            <h5>How It Works</h5>
+            <p>This travel planner uses a <strong>multi-agent architecture</strong> to create comprehensive itineraries:</p>
+            
+            <h6>🎯 Supervisor Agent</h6>
+            <ul class="small">
+                <li>Coordinates all other agents</li>
+                <li>Receives your travel request</li>
+                <li>Delegates tasks to specialized agents</li>
+                <li>Assembles the final itinerary</li>
+            </ul>
+            
+            <h6>✈️ Flight Agent</h6>
+            <ul class="small">
+                <li>Provides flight options</li>
+            </ul>
+            
+            <h6>🏨 Hotel Agent</h6>
+            <ul class="small">
+                <li>Finds accommodation options</li>
+            </ul>
+            
+            <h6>🏛️ Attractions Agent</h6>
+            <ul class="small">
+                <li>Discovers local attractions</li>
+            </ul>
+            
+            <h6>🍽️ Food Agent</h6>
+            <ul class="small">
+                <li>Recommends restaurants</li>
+            </ul>
+            
+            <hr>
+            
+            <h5>🔄 Process Flow</h5>
+            <ol class="small">
+                <li><strong>Input Processing</strong>: Supervisor receives your travel details</li>
+                <li><strong>Task Delegation</strong>: Each agent works on their specialty</li>
+                <li><strong>Information Gathering</strong>: Agents collect relevant data</li>
+                <li><strong>Coordination</strong>: Supervisor organizes all findings</li>
+                <li><strong>Final Assembly</strong>: Complete itinerary is generated</li>
+            </ol>
+            
+            <hr>
+            
+            <h5>⚡ Powered By</h5>
+            <ul class="small">                
+                <li><strong>Multi-Agent Orchestration</strong></li>
+                <li><strong>OpenAI GPT-4o Model</strong></li>
+            </ul>
+        </div>
+        
+        <!-- Main Content - replicates your Python main area -->
+        <div class="col-md-9 p-4">
+            <h1>🧳 AI Travel Planner</h1>
+            <p class="lead">Plan your next adventure with AI-powered itinerary suggestions using our multi-agent system.</p>
+            
+            <!-- Disclaimer - replicates your Python st.warning -->
+            <div class="alert alert-warning" role="alert">
+                <strong>⚠️ Important Disclaimer:</strong> This is a demonstration application.
+                The Flight Agent and Hotel Agent generate realistic-looking fictional data for
+                demonstration purposes only. This application is <strong>not connected to any real travel
+                booking APIs</strong> or live travel data sources. Please do not use this information for
+                actual travel planning or booking.
+            </div>
+            
+            <!-- Display validation errors - improved to show all errors -->
+            @if (!ViewData.ModelState.IsValid && ViewData.ModelState.ErrorCount > 0)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h5 class="alert-heading">Please correct the following errors:</h5>
+                    <ul class="mb-0">
+                        @foreach (var modelState in ViewData.ModelState.Values)
+                        {
+                            foreach (var error in modelState.Errors)
+                            {
+                                <li>@error.ErrorMessage</li>
+                            }
+                        }
+                    </ul>
+                </div>
+            }
+            
+            <!-- Travel Form - replicates your Python form inputs -->
+            <form asp-action="GenerateItinerary" method="post" id="travelForm">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Origin" class="form-label">Origin City</label>
+                        <input asp-for="Origin" class="form-control" placeholder="London" required />
+                        <span asp-validation-for="Origin" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="Destination" class="form-label">Destination City</label>
+                        <input asp-for="Destination" class="form-control" placeholder="Boston" required />
+                        <span asp-validation-for="Destination" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="StartDate" class="form-label">Start Date</label>
+                        <input asp-for="StartDate" class="form-control" type="date" required />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="EndDate" class="form-label">End Date</label>
+                        <input asp-for="EndDate" class="form-control" type="date" required />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                
+                <!-- Generate Button - replicates your Python st.button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg" id="generateBtn">
+                        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="loadingSpinner"></span>
+                        <span id="buttonText">Generate Itinerary</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    
+    <script>
+        // Add loading spinner functionality (replicates your Python st.spinner)
+        document.getElementById('travelForm').addEventListener('submit', function(e) {
+            // Basic client-side validation
+            const origin = document.querySelector('input[name="Origin"]').value.trim();
+            const destination = document.querySelector('input[name="Destination"]').value.trim();
+            const startDate = document.querySelector('input[name="StartDate"]').value;
+            const endDate = document.querySelector('input[name="EndDate"]').value;
+            
+            if (!origin || !destination || !startDate || !endDate) {
+                return; // Let HTML5 validation handle it
+            }
+            
+            const btn = document.getElementById('generateBtn');
+            const spinner = document.getElementById('loadingSpinner');
+            const buttonText = document.getElementById('buttonText');
+            
+            btn.disabled = true;
+            spinner.classList.remove('d-none');
+            buttonText.textContent = ' Multi-agent system is working on your itinerary...';
+        });
+    </script>
+}
