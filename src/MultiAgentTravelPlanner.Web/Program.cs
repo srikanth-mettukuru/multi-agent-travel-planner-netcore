@@ -8,11 +8,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.Configure<OpenAISettings>(
     builder.Configuration.GetSection(OpenAISettings.SectionName));
 
-// Add services to the container.
+// Add services to the DI container.
 builder.Services.AddControllersWithViews();
 
-// Register the Azure AI Travel service
-//builder.Services.AddScoped<IAzureAITravelService, AzureAITravelService>();
+// Register the service dependencies
 builder.Services.AddScoped<IFlightsAgent, FlightsAgent>();
 builder.Services.AddScoped<IHotelsAgent, HotelsAgent>();
 builder.Services.AddScoped<IAttractionsAgent, AttractionsAgent>();
